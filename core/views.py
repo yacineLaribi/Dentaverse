@@ -63,12 +63,14 @@ def analyze_xray(request, analysis_id):
     Analyze this dental X-ray image and provide a detailed clinical assessment.
     
     Please examine the image for:
+    - Les Bridges / Prothèses
     - Tooth decay/cavities
     - Root canal issues
     - Bone density
     - Periodontal disease
     - Impacted teeth
     - Fractures
+    - Obturations
     - Abnormal growths
     
     Return your analysis in the following JSON format:

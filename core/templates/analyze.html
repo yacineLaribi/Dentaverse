@@ -1,0 +1,663 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IA d'Analyse de Radiographies Dentaires</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #091123;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated background particles */
+    .bg-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) { width: 8px; height: 8px; top: 20%; left: 10%; animation-delay: 0s; }
+    .particle:nth-child(2) { width: 12px; height: 12px; top: 60%; left: 80%; animation-delay: 2s; }
+    .particle:nth-child(3) { width: 6px; height: 6px; top: 80%; left: 30%; animation-delay: 4s; }
+    .particle:nth-child(4) { width: 10px; height: 10px; top: 40%; left: 70%; animation-delay: 1s; }
+    .particle:nth-child(5) { width: 14px; height: 14px; top: 10%; left: 50%; animation-delay: 3s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+      50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+    }
+
+    /* Gradient overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center top, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+    }
+
+    /* Glass morphism header */
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.1), transparent, rgba(147, 51, 234, 0.1), transparent);
+      animation: rotate 20s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes rotate {
+      100% { transform: rotate(360deg); }
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    /* Upload section with hover effects */
+    .upload-section {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(15px);
+      border: 2px dashed rgba(59, 130, 246, 0.3);
+      border-radius: 20px;
+      padding: 3rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+
+    .upload-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+      transition: left 0.5s;
+    }
+
+    .upload-section:hover {
+      border-color: rgba(59, 130, 246, 0.6);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+    }
+
+    .upload-section:hover::before {
+      left: 100%;
+    }
+
+    .upload-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .upload-description {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    /* Custom file input */
+    .file-input-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+
+    .file-input {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .file-input-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      color: #3b82f6;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .file-input-label:hover {
+      background: rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* Preview image with glow effect */
+    .preview-container {
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .preview-image {
+      max-width: 300px;
+      max-height: 300px;
+      border-radius: 16px;
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .preview-image.show {
+      display: block;
+      animation: fadeInScale 0.5s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Analyze button with gradient and animation */
+    .analyze-btn {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    }
+
+    .analyze-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .analyze-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+    }
+
+    .analyze-btn:hover::before {
+      left: 100%;
+    }
+
+    .analyze-btn:disabled {
+      background: rgba(100, 116, 139, 0.3);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Loading animation */
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 2rem 0;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+
+    .spinner::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border: 2px solid rgba(139, 92, 246, 0.2);
+      border-top: 2px solid #8b5cf6;
+      border-radius: 50%;
+      animation: spin 2s linear infinite reverse;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Results section */
+    .results-section {
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .results-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .results-content {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #e2e8f0;
+      position: relative;
+    }
+
+    .results-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .results-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .results-content::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.3);
+      border-radius: 4px;
+    }
+
+    .results-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.5);
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .success {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #86efac;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .upload-section {
+        padding: 2rem 1rem;
+      }
+
+      .preview-image {
+        max-width: 250px;
+        max-height: 250px;
+      }
+    }
+
+    /* Pulse animation for active elements */
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+      }
+    }
+
+    .pulse-on-upload {
+      animation: pulse 2s infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated background particles -->
+  <div class="bg-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <div class="container">
+    <!-- Header with glass morphism -->
+    <div class="header">
+        <img src="{% static 'images/dentaverse.svg' %}" alt="logo">
+        <br>
+        <p class="subtitle mt-10">Analyse Radiographique Avancée Propulsée par IA</p>
+    </div>
+
+    <!-- Upload section -->
+    <div class="upload-section" id="uploadSection">
+      <div class="upload-title">
+        📡 Télécharger une Radiographie
+      </div>
+      <p class="upload-description">
+        Téléchargez une radiographie dentaire claire pour une analyse par IA<br>
+        <small>Formats supportés : JPEG, PNG • Taille maximum : 10 Mo</small>
+      </p>
+      
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="file-input-wrapper">
+          <input type="file" id="xray" name="xray" accept="image/*" required class="file-input">
+          <label for="xray" class="file-input-label">
+            📁 Choisir un fichier
+          </label>
+        </div>
+        
+        <div class="preview-container">
+          <img id="preview" class="preview-image" alt="Aperçu de la radiographie">
+        </div>
+        
+        <button type="submit" class="analyze-btn" id="analyzeBtn">
+          🔬 Analyser la radiographie
+        </button>
+      </form>
+    </div>
+
+    <!-- Loading section -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p class="loading-text">L'IA analyse votre radiographie... Veuillez patienter</p>
+    </div>
+
+    <!-- Results section -->
+    <div class="results-section">
+      <div class="results-title">
+        📊 Résultats d'Analyse
+      </div>
+      <div id="results" class="results-content">
+        En attente du téléchargement de radiographie pour commencer l'analyse...
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('xray');
+    const preview = document.getElementById('preview');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const loading = document.getElementById('loading');
+    const results = document.getElementById('results');
+    const uploadSection = document.getElementById('uploadSection');
+
+    // Preview uploaded image with animation
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.classList.add('show');
+          uploadSection.classList.add('pulse-on-upload');
+          setTimeout(() => uploadSection.classList.remove('pulse-on-upload'), 2000);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.classList.remove('show');
+      }
+    });
+
+    async function startAnalysis(e) {
+      e.preventDefault();
+      
+      if (!fileInput.files.length) {
+        showError("Veuillez sélectionner une radiographie à analyser");
+        return;
+      }
+
+      // Show loading state with animations
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = "🔄 Analyse en cours...";
+      loading.style.display = "block";
+      results.textContent = "Initialisation du système d'analyse IA...";
+      results.className = "results-content";
+
+      try {
+        // Step 1: Upload image
+        const formData = new FormData();
+        formData.append("xray", fileInput.files[0]);
+
+        results.textContent = "📤 Téléchargement de la radiographie vers les serveurs sécurisés...";
+
+        const createResp = await fetch("/create/", {
+          method: "POST",
+          body: formData,
+        });
+        
+        const createData = await createResp.json();
+
+        if (!createData.success) {
+          throw new Error(createData.error || "Échec du téléchargement de l'image");
+        }
+
+        const analysisId = createData.analysisId;
+        results.textContent = "✅ Téléchargement réussi ! Traitement IA initié...\n🧠 Les modèles d'apprentissage profond analysent les motifs radiographiques...";
+
+        // Step 2: Process with AI
+        const analyzeResp = await fetch(`/analysis/${analysisId}/analyze/`, {
+          method: "POST",
+        });
+        
+        const analyzeData = await analyzeResp.json();
+
+        if (!analyzeData.success) {
+          throw new Error(analyzeData.error || "Échec de l'analyse IA");
+        }
+
+        // Step 3: Display results with success animation
+        displayResults(analyzeData.results);
+
+      } catch (error) {
+        showError("Échec de l'analyse : " + error.message);
+      } finally {
+        // Reset UI state
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = "🔬 Analyser la radiographie";
+        loading.style.display = "none";
+      }
+    }
+
+    function displayResults(resultsData) {
+      results.className = "results-content success";
+      
+      let formattedResults = "🎯 ANALYSE IA TERMINÉE\n";
+      formattedResults += "=" + "=".repeat(50) + "\n\n";
+      
+      if (resultsData.detections && resultsData.detections.length > 0) {
+        formattedResults += "🔍 OBSERVATIONS CLINIQUES :\n";
+        formattedResults += "-".repeat(28) + "\n";
+        resultsData.detections.forEach((detection, index) => {
+          const severityIcon = getSeverityIcon(detection.severity);
+          formattedResults += `${index + 1}. ${severityIcon} ${detection.finding}\n`;
+          formattedResults += `   📍 Localisation : ${detection.location || 'Zone générale'}\n`;
+          formattedResults += `   ⚡ Sévérité : ${(detection.severity || 'Inconnue').toUpperCase()}\n\n`;
+        });
+      } else {
+        formattedResults += "🔍 OBSERVATIONS CLINIQUES :\n";
+        formattedResults += "-".repeat(28) + "\n";
+        formattedResults += "✅ Aucune anomalie significative détectée par l'analyse IA\n\n";
+      }
+      
+      if (resultsData.recommendations && resultsData.recommendations.length > 0) {
+        formattedResults += "💡 RECOMMANDATIONS IA :\n";
+        formattedResults += "-".repeat(25) + "\n";
+        resultsData.recommendations.forEach((rec, index) => {
+          formattedResults += `${index + 1}. 📋 ${rec}\n`;
+        });
+        formattedResults += "\n";
+      }
+      
+      if (resultsData.overallAssessment) {
+        formattedResults += "📊 ÉVALUATION GLOBALE :\n";
+        formattedResults += "-".repeat(25) + "\n";
+        formattedResults += `${resultsData.overallAssessment}\n\n`;
+      }
+      
+      if (resultsData.urgency) {
+        const urgencyIcon = getUrgencyIcon(resultsData.urgency);
+        formattedResults += `${urgencyIcon} CLASSIFICATION D'URGENCE : ${resultsData.urgency.toUpperCase()}\n\n`;
+      }
+      
+      formattedResults += "⚠️  AVERTISSEMENT MÉDICAL :\n";
+      formattedResults += "=" + "=".repeat(28) + "\n";
+      formattedResults += "Cette analyse IA est fournie à titre informatif uniquement.\n";
+      formattedResults += "Consultez toujours des professionnels dentaires qualifiés\n";
+      formattedResults += "pour un diagnostic définitif et un plan de traitement.\n\n";
+      
+      if (resultsData.raw_response) {
+        formattedResults += "🤖 SORTIE IA BRUTE :\n";
+        formattedResults += "-".repeat(20) + "\n";
+        formattedResults += resultsData.raw_response;
+      }
+      
+      results.textContent = formattedResults;
+    }
+
+    function getSeverityIcon(severity) {
+      switch(severity?.toLowerCase()) {
+        case 'high': return '🚨';
+        case 'medium': return '⚠️';
+        case 'low': return '⚡';
+        default: return '📌';
+      }
+    }
+
+    function getUrgencyIcon(urgency) {
+      switch(urgency?.toLowerCase()) {
+        case 'emergency': return '🚨';
+        case 'urgent': return '⚠️';
+        case 'routine': return '✅';
+        default: return '📋';
+      }
+    }
+
+    function showError(message) {
+      results.className = "results-content error";
+      results.textContent = `❌ ERROR DETECTED\n${"=".repeat(20)}\n\n${message}\n\nPlease check your image and try again.`;
+    }
+
+    uploadForm.addEventListener('submit', startAnalysis);
+  </script>
+</body>
+</html>

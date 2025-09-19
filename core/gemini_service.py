@@ -3,7 +3,7 @@ import os, base64
 from google import genai
 from google.genai import types
 
-client = genai.Client(api_key='AIzaSyA3l558qLO87babXA4li2X7mM03RRos3iQ')
+client = genai.Client(api_key='YOUR_GEMINI_API_KEY')
 
 def analyze_xray_with_gemini(image_path: str):
     prompt = """You are an expert dental radiologist AI assistant. Analyze this dental X-ray image and provide a detailed clinical assessment.
